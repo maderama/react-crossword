@@ -18,7 +18,7 @@ type CrosswordGridProps = {
 
 const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
     // Initialize the grid with 'X' for blocked cells
-    const initialGrid = Array(7).fill(0).map(() => Array(8).fill('X'));
+    const initialGrid = Array(14).fill(0).map(() => Array(14).fill('X'));
 
     // Mark the empty cells based on the crossword data
     crosswordData[level].forEach(({answer, startx, starty, orientation}) => {
@@ -34,13 +34,13 @@ const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
         }
     });
 
-    // Replace empty cells with 'B' to represent black cells
+    // Replace empty cells with '8' to represent black cells
     for (let row = 0; row < initialGrid.length; row++) {
         for (let col = 0; col < initialGrid[row].length; col++) {
             if (initialGrid[row][col] === '') {
                 initialGrid[row][col] = ''; // Keep it empty for user input
             } else if (initialGrid[row][col] === 'X') {
-                initialGrid[row][col] = 'B'; // Mark with 'B' for solid black
+                initialGrid[row][col] = '8'; // Mark with '8' for solid black
             }
         }
     }
@@ -49,7 +49,7 @@ const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
 };
 
 const generateAnswerGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
-    const answerGrid = Array(7).fill(0).map(() => Array(8).fill('X'));
+    const answerGrid = Array(14).fill(0).map(() => Array(14).fill('X'));
     crosswordData[level].forEach(({answer, startx, starty, orientation}) => {
         let x = startx - 1;
         let y = starty - 1;
@@ -98,7 +98,7 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
                     {row.map((cell, colIndex) => {
                         // Check if the cell has a clue number
                         const clueNumber = crosswordData[level].find(entry => {
-                            const { startx, starty, orientation } = entry;
+                            const {startx, starty, orientation} = entry;
                             return (
                                 (orientation === 'across' && rowIndex + 1 === starty && colIndex + 1 === startx) ||
                                 (orientation === 'down' && rowIndex + 1 === starty && colIndex + 1 === startx)
@@ -107,8 +107,8 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
 
                         return (
                             <View key={`${rowIndex}-${colIndex}`} style={styles.cellContainer}>
-                                {cell === 'B' ? (
-                                    <View style={styles.solidCell} />
+                                {cell === '8' ? (
+                                    <View style={styles.solidCell}/>
                                 ) : (
                                     <TextInput
                                         style={[styles.cell, cell === 'X' && styles.staticCell]}
@@ -118,7 +118,7 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
                                         maxLength={1}  // Limit input to 1 character
                                     />
                                 )}
-                                {clueNumber && cell !== 'B' && (
+                                {clueNumber && cell !== '8' && (
                                     <Text style={styles.smallDigit}>{clueNumber.position}</Text>
                                 )}
                             </View>
@@ -160,10 +160,13 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
 
         return (
             <View>
+                {/*across heading*/}
                 <View style={styles.headingContainer}>
                     <Text style={styles.headingText}>Across</Text>
                 </View>
                 <View style={styles.questionsContainer}>{questions.across}</View>
+
+                {/*down heading*/}
                 <View style={styles.headingContainer}>
                     <Text style={styles.headingText}>Down</Text>
                 </View>
@@ -174,11 +177,8 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
 
     return (
         <View style={styles.container}>
-            {renderQuestions()}
             {renderGrid()}
             <View style={styles.buttonContainer}>
-                <Button color={'#e27bb1'} title="Generate" onPress={handleGenerate}/>
-                <View style={styles.gap}/>
                 <Button color={'#e27bb1'} title="Verify" onPress={handleVerify}/>
                 <View style={styles.gap}/>
                 <Button color={'#e27bb1'} title="Reset" onPress={handleReset}/>
@@ -197,17 +197,20 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         margin: 0,
         borderColor: '#e44b8d',
-        width: 30,
-        height: 30,
+        width: 40,
+        height: 40,
         textAlign: 'center',
         color: 'white',
     },
     staticCell: {borderColor: '#e44b8d', color: 'transparent', backgroundColor: '#e27bb1',},
     smallDigit: {position: 'absolute', top: 2, left: 2, fontSize: 10, fontWeight: 'bold', color: 'white'},
-    questionsContainer: {marginBottom: 10, padding: 10},
-    questionText: {fontSize: 16, fontStyle: 'italic', color: 'white'},
+
+    questionsContainer: {marginBottom: 50, padding: 10},
+    questionText: {fontSize: 14, fontStyle: 'italic', color: 'white'},
+
     headingContainer: {marginTop: 10, marginBottom: 5},
     headingText: {fontSize: 18, fontWeight: 'bold', color: '#e27bb1', textAlign: 'center'},
+
     buttonContainer: {flexDirection: 'row', marginTop: 20},
     gap: {width: 10},
     solidCell: {
@@ -215,8 +218,8 @@ const styles = StyleSheet.create({
         margin: 0,
         borderColor: '#e44b8d',
         backgroundColor: '#e27bb1',
-        width: 30,
-        height: 30,
+        width: 40,
+        height: 40,
         textAlign: 'center',
     },
 });
