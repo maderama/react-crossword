@@ -1,37 +1,38 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import React from 'react';
+import {View, StyleSheet, Text} from 'react-native';
+import CrosswordGrid from "./CrosswordGrid";
+import crosswordData from "./crosswordData";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const Layout = ({ children }: { children: React.ReactNode }) => {
+    return (
+        <View style={styles.container}>
+            <View style={styles.messageContainer}>
+                <Text style={styles.welcomeText}>The Art of Being a Great Colleague Crossword</Text>
+            </View>
+            <CrosswordGrid crosswordData={crosswordData} />
+            <View style={styles.content}>{children}</View>
+        </View>
+    );
+};
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#282828',
+        flex: 1,
+    },
+    messageContainer: {
+        padding: 20,
+        alignItems: 'center',
+    },
+    welcomeText: {
+        fontSize: 24,        // Increase or decrease font size as desired
+        fontWeight: 'bold',  // Make the text bold
+        color: '#e44b8d',       // Set text color (change to any color you like)
+        textAlign: 'center', // Center align the text
+    },
+    content: {
+        flex: 1,
+    },
+});
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
-  );
-}
+export default Layout;
