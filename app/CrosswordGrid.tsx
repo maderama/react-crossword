@@ -17,8 +17,8 @@ type CrosswordGridProps = {
 };
 
 const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
-    // Initialize the grid with 'X' for blocked cells
-    const initialGrid = Array(14).fill(0).map(() => Array(14).fill('X'));
+    // Initialize the grid with '0' for blocked cells
+    const initialGrid = Array(14).fill(0).map(() => Array(14).fill('0'));
 
     // Mark the empty cells based on the crossword data
     crosswordData[level].forEach(({answer, startx, starty, orientation}) => {
@@ -39,7 +39,7 @@ const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
         for (let col = 0; col < initialGrid[row].length; col++) {
             if (initialGrid[row][col] === '') {
                 initialGrid[row][col] = ''; // Keep it empty for user input
-            } else if (initialGrid[row][col] === 'X') {
+            } else if (initialGrid[row][col] === '0') {
                 initialGrid[row][col] = '8'; // Mark with '8' for solid black
             }
         }
@@ -49,7 +49,7 @@ const generateInitialGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
 };
 
 const generateAnswerGrid = (crosswordData: CrosswordEntry[][]): string[][] => {
-    const answerGrid = Array(14).fill(0).map(() => Array(14).fill('X'));
+    const answerGrid = Array(14).fill(0).map(() => Array(14).fill('0'));
     crosswordData[level].forEach(({answer, startx, starty, orientation}) => {
         let x = startx - 1;
         let y = starty - 1;
@@ -71,11 +71,6 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
         setGrid(generateInitialGrid(crosswordData));
     }, [crosswordData]);
 
-    const handleGenerate = () => {
-        level = (level + 1) % crosswordData.length;
-        setGrid(generateInitialGrid(crosswordData));
-    };
-
     const handleVerify = () => {
         const answerGrid = generateAnswerGrid(crosswordData);
         const isCorrect = JSON.stringify(grid) === JSON.stringify(answerGrid);
@@ -91,12 +86,11 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
         setGrid(answerGrid);
     };
 
-    const renderGrid = () => (
+    const RenderGrid = () => (
         <View>
             {grid.map((row, rowIndex) => (
                 <View key={rowIndex} style={styles.row}>
                     {row.map((cell, colIndex) => {
-                        // Check if the cell has a clue number
                         const clueNumber = crosswordData[level].find(entry => {
                             const {startx, starty, orientation} = entry;
                             return (
@@ -111,11 +105,12 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
                                     <View style={styles.solidCell}/>
                                 ) : (
                                     <TextInput
-                                        style={[styles.cell, cell === 'X' && styles.staticCell]}
-                                        value={cell}  // Set to cell directly
-                                        editable={cell !== 'X'}
+                                        style={[styles.cell, cell === '0' && styles.staticCell]}
+                                        value={cell}
+                                        editable={cell !== '0'}
                                         onChangeText={(text) => handleInputChange(rowIndex, colIndex, text)}
                                         maxLength={1}  // Limit input to 1 character
+                                        autoCapitalize="characters"
                                     />
                                 )}
                                 {clueNumber && cell !== '8' && (
@@ -130,15 +125,16 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
     );
 
     const handleInputChange = (rowIndex: number, colIndex: number, text: string) => {
-        console.log(`Input received: '${text}'`); // Log the input received
-        if (text.length === 1 || text === '') {
+        const upperText = text.toUpperCase(); // Convert input to uppercase
+        console.log(`Input received: '${upperText}'`); // Log the input received
+        if (upperText.length === 1 || upperText === '') {
             setGrid((prevGrid) => {
                 const updatedGrid = [...prevGrid];
                 // Only update the cell if the text is not empty
-                if (text.length === 1) {
-                    updatedGrid[rowIndex][colIndex] = text;  // Update the specific cell in the grid
-                } else if (text === '') {
-                    updatedGrid[rowIndex][colIndex] = '';  // Ensure it resets to empty string
+                if (upperText.length === 1) {
+                    updatedGrid[rowIndex][colIndex] = upperText;  // Update the specific cell in uppercase
+                } else if (upperText === '') {
+                    updatedGrid[rowIndex][colIndex] = '';  // Ensure it resets to an empty string
                 }
                 console.log(`Updated grid cell [${rowIndex}, ${colIndex}]: '${updatedGrid[rowIndex][colIndex]}'`); // Log the updated value
                 return updatedGrid;  // Return the updated grid
@@ -146,38 +142,9 @@ const CrosswordGrid: React.FC<CrosswordGridProps> = ({crosswordData}) => {
         }
     };
 
-    const renderQuestions = () => {
-        const questions = {across: [], down: []} as { [key: string]: JSX.Element[] };
-
-        crosswordData[level].forEach(({hint, orientation, position}) => {
-            const questionText = `${position}. ${hint}`;
-            questions[orientation].push(
-                <Text key={`question-${position}`} style={styles.questionText}>
-                    {questionText}
-                </Text>
-            );
-        });
-
-        return (
-            <View>
-                {/*across heading*/}
-                <View style={styles.headingContainer}>
-                    <Text style={styles.headingText}>Across</Text>
-                </View>
-                <View style={styles.questionsContainer}>{questions.across}</View>
-
-                {/*down heading*/}
-                <View style={styles.headingContainer}>
-                    <Text style={styles.headingText}>Down</Text>
-                </View>
-                <View style={styles.questionsContainer}>{questions.down}</View>
-            </View>
-        );
-    };
-
     return (
         <View style={styles.container}>
-            {renderGrid()}
+            <RenderGrid />
             <View style={styles.buttonContainer}>
                 <Button color={'#e27bb1'} title="Verify" onPress={handleVerify}/>
                 <View style={styles.gap}/>
